@@ -5,87 +5,113 @@ import java.io.FileReader;
 
 public class CubeConundrum {
 
+    /**
+     * 
+     * @param line
+     * @return the game number i.e if input is Game 1, returns 1
+     */
 
-    // reads only a single digit, need to rewrite this
-    // possible idea: don't return immediately, n+n*10 first and then return the value
-    // possible idea 2: convert String to character, then repeat possible idea 1 ( maybe not haha )
-    public static Integer getNumericValue (String gameIndex) {
-        for (char c : gameIndex.toCharArray()) {
-            if ( c >= 48 && c <= 57 ) 
-                return Character.getNumericValue(c); 
-        }
-        return null;
-    }
-
-    public static int classifyRecords ( String line ) {
-        int sum = 0;
+    static int getNumericValue ( String line )  {
         int n = 0;
-        int colorsArray[] = { 0, 0, 0};
-        String[] parts = line.split(":",2); //  Game 1 | 7 blue, 6 green ...
-
-        String[] furtherDivisionForIndexOnly = parts[0].split(" "); // Game | 1
-
-        String gameIndexValue = furtherDivisionForIndexOnly[1];
-        char[] gameIndexCharacter = gameIndexValue.toCharArray();
-       
-        for (char c : gameIndexCharacter) {
-            n = n*10 + Character.getNumericValue(c);
+        for (char c : line.trim().toCharArray()) {
+            if ( c >= 48 && c <= 57 ) 
+                n = n*10+ Character.getNumericValue(c);
         }
-        
-        
-
-        String[] gameDataPerSet = parts[1].split(";",4);    //  7 blue, 6 green, 3 red      
-
-        for (int i = 0; i < gameDataPerSet.length; i++) {
-            colorsArray = storeGameDataRecords(gameDataPerSet[i]);
-        }
-
-        if(colorsArray[0] <= 12 && colorsArray[1] <=14 && colorsArray[2] <= 13)
-            sum+=n;
-
-        return sum;
-  
+        return n;
     }
 
-
-    // Reads only single value, need to rewrite getNumericValue function
-    public static int[] storeGameDataRecords ( String gameDataPerSet ) {
-        String[] individualSetValue = gameDataPerSet.split(",");  // 7 blue
-        
-        int colorsArray[] = { 0, 0, 0};
-
-        for (int i = 0; i < individualSetValue.length; i++) {
-            int n = getNumericValue(individualSetValue[i]);
-            if ( individualSetValue[i].contains("red")) 
-                colorsArray[0] += n;
-            else if ( individualSetValue[i].contains("blue")) 
-                colorsArray[1] += n;
-            else if ( individualSetValue[i].contains("green"))
-                colorsArray[2] += n;        
+    /**
+     * 
+     * @param line
+     * @return boolean value after checking whether the more than the valid cubes were taken out at any game
+     */
+    static boolean checkForValidity ( String line ) {
+        boolean flag = true;
+        int red = 0, green = 0, blue = 0;
+        if ( line.contains("red")) {
+            red = getNumericValue(line);
+        } else if ( line.contains("green")) {
+            green = getNumericValue(line);
+        } else {
+            blue = getNumericValue(line);
         }
-        
-        return colorsArray;
-        
-        // return false;
+        if ( red > 12 || green > 13 || blue > 14) {
+            flag = false;
+        }
+        return flag;
     }
 
+    /**
+     * 
+     * @param line
+     * scraps the data further on the basis of spaces, last method where the data is further divided
+     */
+    static boolean perSetData ( String line ) {
+        boolean valid = true;
+        String perSetCubes[] = line.trim().split(",");
+        for (String string : perSetCubes) {
+            // System.out.println(string);
+            valid = checkForValidity(string);
+            if ( valid == false) 
+                break;
+        }
+        return valid;
+    } 
+
+    /**
+     * 
+     * @param line
+     * disects the data passed into data sets i.e. separates the data on the basis of semicolons
+     */
+    static boolean dataSetDisection ( String line ) {
+        boolean valid = true;
+        String dataSet[] = line.trim().split(";");
+        for (String string : dataSet) {
+            valid = perSetData(string);
+            if ( valid ) {
+                break;
+            }
+        }
+        return valid;
+    }
+
+    /**
+     * 
+     * @param line
+     * divides the line read from the file into two parts on the basis of colon, passes the second part of data to dataSetDisection()
+     */
+    static int initialDataDisection ( String line ) {
+        
+        boolean valid;
+        String initialDisectedData[] = line.split(":");
+
+        int gameIndex = getNumericValue(initialDisectedData[0]);
+
+        valid = dataSetDisection(initialDisectedData[1]);
+        
+        if ( valid  ) {
+            return gameIndex;
+        }
+        
+        return 0;
+        
+        // System.out.println(gameIndex);
+        // System.out.println("==================================================================================================");
+    }
 
     public static void main(String[] args) {
         try {
-            int num = 0, sum = 0;
             BufferedReader bfr = new BufferedReader(new FileReader("C:\\Users\\kafle\\OneDrive\\Desktop\\advent-of-code-2023\\Day2\\input.txt"));
+
             String line;
-
-
-            while ( (line = bfr.readLine())!=null) {
-                num = classifyRecords(line);
-                sum += num;    
+            int sum = 0;
+            while ((line = bfr.readLine())!=null) {
+                int n = initialDataDisection(line);
+                sum += n;
             }
-
             System.out.println(sum);
-            bfr.close();
+
         } catch (Exception e) {
-            System.out.println("exception");
             // TODO: handle exception
         }
     }
