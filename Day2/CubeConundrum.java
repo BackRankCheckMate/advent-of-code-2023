@@ -68,7 +68,7 @@ public class CubeConundrum {
         String dataSet[] = line.trim().split(";");
         for (String string : dataSet) {
             valid = perSetData(string);
-            if ( valid ) {
+            if ( valid == false ) {
                 break;
             }
         }
