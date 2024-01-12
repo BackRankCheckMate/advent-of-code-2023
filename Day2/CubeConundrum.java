@@ -111,6 +111,8 @@ public class CubeConundrum {
             }
             System.out.println(sum);
 
+            bfr.close();
+
         } catch (Exception e) {
             // TODO: handle exception
         }
